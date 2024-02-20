@@ -167,7 +167,7 @@ export default function Home() {
 										</FormItem>
 									)}
 								/>
-								<Button type="submit">Send message</Button>
+								<Button type="submit">Sunmit</Button>
 							</form>
 						</Form>
 					</Card>
