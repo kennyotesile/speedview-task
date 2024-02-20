@@ -41,6 +41,7 @@ The project follows a structured directory layout:
 │   ├── app/ # App folder
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
+│   │   ├── globals.css # Global CSS file
 │   │   └── ...
 │   ├── components/ # Reusable React components
 │   │   ├── pages/ # Page components
@@ -50,9 +51,6 @@ The project follows a structured directory layout:
 │   ├── lib/ # Modules and utility functions
 │   │   ├── constants.js # Constants
 │   │   ├── utils.ts # Utility functions
-│   │   └── ...
-│   ├── styles/ # CSS files
-│   │   ├── globals.css # Global CSS file
 │   │   └── ...
 ├── ... # Configs, README, etc.
 ```
