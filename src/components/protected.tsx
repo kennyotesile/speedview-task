@@ -12,5 +12,5 @@ export default function Protected({ children }: { children: React.ReactNode }) {
 		}
 	}, [session, router]);
 
-	return <main>{children}</main>;
+	return <>{children}</>;
 }
