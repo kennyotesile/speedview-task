@@ -2,7 +2,18 @@
 
 ## Project Overview
 
-This is a front-end task for Memoirs. This project is built using [Next.js](https://nextjs.org/).
+This is a front-end task for [Memoirs](https://memoirs.education) by [Kenny Otesile](https://github.com/kennyotesile). This project is developed using:
+
+- [React](https://reactjs.org/)
+- [Next.js](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn UI](https://ui.shadcn.com/) (based on Radix UI)
+- [NextAuth.js](https://next-auth.js.org/)
+- [React Hook Form](https://react-hook-form.com/)
+- [Zod](https://github.com/colinhacks/zod)
+- [Prisma](https://www.prisma.io/)
+- [MongoDB](https://www.mongodb.com/)
 
 ## Prerequisites
 
@@ -60,6 +71,16 @@ The project follows a structured directory layout:
 │   │   └── utils.ts # Utility functions
 ├── ... # Configs, README, etc.
 ```
+
+## Authentication
+
+N/B: The Google and Facebook OAuth features are not in production mode, hence, to be able to sign in via either of these providers, your email address would have to be added to the list of internal testers' email addresses. The providers have been added still though to demonstrate their functionality.
+
+**GitHub Authentication:** The quickest way to test the authentication feature would be via GitHub Authentication which does not require publishing the app to production before it can be used.
+
+## ORM and Database
+
+The project makes use of [Prisma](https://prisma.io) as its ORM and [MongoDB](https://www.mongodb.com/) hosted on the [MongoDB Atlas](https://www.mongodb.com/atlas) cloud service as its database system. No special script needs to be run to start up the database as it runs on the cloud.
 
 ## Usage
 
