@@ -15,38 +15,40 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
+const personalInfoFormSchema = z.object({
+	firstName: z.string().min(1, {
+		message: "Please enter your first name",
+	}),
+	lastName: z.string().min(1, {
+		message: "Please enter your last name",
+	}),
+	emailAddress: z
+		.string()
+		.email({
+			message: "Please enter a valid email address",
+		})
+		.min(4, {
+			message: "Please enter a valid email address",
+		}),
+	phoneNumber: z.coerce.string().min(11, {
+		message: "Please enter your phone number",
+	}),
+	address: z.string().min(1, {
+		message: "Please enter your address",
+	}),
+});
 
 export default function Home() {
 	const { data: session } = useSession();
+	const [personalInfo, setPersonalInfo] = useState(null);
+	const [submittingPersonalInfo, setSubmittingPersonalInfo] = useState(false);
+	const [gettingPersonalInfo, setGettingPersonalInfo] = useState(false);
 
-	const contactFormSchema = z.object({
-		firstName: z.string().min(1, {
-			message: "Please enter your first name",
-		}),
-		lastName: z.string().min(1, {
-			message: "Please enter your last name",
-		}),
-		emailAddress: z
-			.string()
-			.email({
-				message: "Please enter a valid email address",
-			})
-			.min(4, {
-				message: "Please enter a valid email address",
-			}),
-		phoneNumber: z.coerce.string().min(11, {
-			message: "Please enter your phone number",
-		}),
-		address: z.string().min(1, {
-			message: "Please enter your address",
-		}),
-		check: z.boolean({
-			required_error: "You must agree to our privacy policy",
-		}),
-	});
-
-	const contactForm = useForm<z.infer<typeof contactFormSchema>>({
-		resolver: zodResolver(contactFormSchema),
+	const personalInfoForm = useForm<z.infer<typeof personalInfoFormSchema>>({
+		resolver: zodResolver(personalInfoFormSchema),
 		defaultValues: {
 			firstName: "",
 			lastName: "",
@@ -56,9 +58,79 @@ export default function Home() {
 		},
 	});
 
-	const submitContactForm = (values: z.infer<typeof contactFormSchema>) => {
-		return;
+	const submitPersonalInfo = async (values: z.infer<typeof personalInfoFormSchema>) => {
+		setSubmittingPersonalInfo(true);
+		console.log("Submitting personal info...");
+
+		const response = await fetch("/api/user", {
+			method: "POST",
+			body: JSON.stringify({
+				email: session?.user?.email,
+				firstName: personalInfoForm.getValues().firstName,
+				lastName: personalInfoForm.getValues().lastName,
+				phone: personalInfoForm.getValues().phoneNumber,
+				address: personalInfoForm.getValues().address,
+			}),
+		});
+
+		if (response.ok) {
+			alert("Personal information submitted successfully!");
+
+			personalInfoForm.reset();
+
+			const data = await response.json();
+			console.log(data);
+		} else {
+			alert("Unknown error occured.");
+
+			setSubmittingPersonalInfo(false);
+			console.error("Failed to submit personal info");
+
+			return;
+		}
+
+		setSubmittingPersonalInfo(false);
+		console.log("Submitted personal info");
+
+		getPersonalInfo();
 	};
+
+	const getPersonalInfo = async () => {
+		setGettingPersonalInfo(true);
+		console.log("Retrieving personal info...");
+
+		const response = await fetch(`/api/user?email=${session?.user?.email}`);
+
+		if (response.ok) {
+			const data = await response.json();
+			setPersonalInfo(data);
+			console.log(data);
+		} else {
+			setGettingPersonalInfo(false);
+			console.error("Failed to retrieve personal info");
+
+			return;
+		}
+
+		setGettingPersonalInfo(false);
+		console.log("Retrieved personal info");
+	};
+
+	useEffect(() => {
+		getPersonalInfo();
+	}, []);
+
+	const { register, watch } = useForm();
+
+	const email = watch("emailAddress");
+
+	useEffect(() => {
+		register("emailAddress");
+
+		if (session?.user?.email) {
+			personalInfoForm.setValue("emailAddress", session?.user?.email);
+		}
+	}, [personalInfoForm, session]);
 
 	return (
 		<Protected>
@@ -97,13 +169,20 @@ export default function Home() {
 						<h1 className="font-semibold text-3xl md:text-4xl">Dashboard</h1>
 						<p className="text-lg text-muted-foreground">Manage your dashboard</p>
 					</div>
+					<div className="flex flex-col space-y-2">
+						<p className="text-lg text-muted-foreground">Email address: {gettingPersonalInfo ? "Loading..." : session?.user?.email}</p>
+						<p className="text-lg text-muted-foreground">First name: {gettingPersonalInfo ? "Loading..." : personalInfo ? personalInfo.firstName : "-"}</p>
+						<p className="text-lg text-muted-foreground">Last name: {gettingPersonalInfo ? "Loading..." : personalInfo ? personalInfo.lastName : "-"}</p>
+						<p className="text-lg text-muted-foreground">Phone number: {gettingPersonalInfo ? "Loading..." : personalInfo ? personalInfo.phone : "-"}</p>
+						<p className="text-lg text-muted-foreground">Address: {gettingPersonalInfo ? "Loading..." : personalInfo ? personalInfo.address : "-"}</p>
+					</div>
 					<Card className="p-6 space-y-8">
-						<h2 className="font-semibold text-2xl">Add Personal Information</h2>
-						<Form {...contactForm}>
-							<form onSubmit={contactForm.handleSubmit(submitContactForm)} className="flex-1 flex flex-col gap-5">
+						<h2 className="font-semibold text-2xl">Edit Personal Information</h2>
+						<Form {...personalInfoForm}>
+							<form onSubmit={personalInfoForm.handleSubmit(submitPersonalInfo)} className="flex-1 flex flex-col gap-5">
 								<div className="flex flex-col lg:flex-row gap-6">
 									<FormField
-										control={contactForm.control}
+										control={personalInfoForm.control}
 										name="firstName"
 										render={({ field }) => (
 											<FormItem className="flex-1 flex flex-col items-start">
@@ -116,7 +195,7 @@ export default function Home() {
 										)}
 									/>
 									<FormField
-										control={contactForm.control}
+										control={personalInfoForm.control}
 										name="lastName"
 										render={({ field }) => (
 											<FormItem className="flex-1 flex flex-col items-start">
@@ -130,20 +209,20 @@ export default function Home() {
 									/>
 								</div>
 								<FormField
-									control={contactForm.control}
+									control={personalInfoForm.control}
 									name="emailAddress"
 									render={({ field }) => (
 										<FormItem className="flex flex-col items-start">
 											<FormLabel className="text-xs font-medium text-muted-foreground">Email address</FormLabel>
 											<FormControl>
-												<Input placeholder="you@yourcompany.com" {...field} />
+												<Input placeholder={session?.user?.email ? session?.user?.email : "you@example.com"} {...field} disabled />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
 								<FormField
-									control={contactForm.control}
+									control={personalInfoForm.control}
 									name="phoneNumber"
 									render={({ field }) => (
 										<FormItem className="flex flex-col items-start">
@@ -156,7 +235,7 @@ export default function Home() {
 									)}
 								/>
 								<FormField
-									control={contactForm.control}
+									control={personalInfoForm.control}
 									name="address"
 									render={({ field }) => (
 										<FormItem className="flex flex-col items-start">
@@ -168,7 +247,10 @@ export default function Home() {
 										</FormItem>
 									)}
 								/>
-								<Button type="submit">Submit</Button>
+								<Button type="submit" disabled={submittingPersonalInfo} className="space-x-2">
+									{submittingPersonalInfo && <Loader2 size={16} className="animate animate-spin" />}
+									<span>Submit</span>
+								</Button>
 							</form>
 						</Form>
 					</Card>
