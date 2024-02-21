@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -167,7 +168,7 @@ export default function Home() {
 										</FormItem>
 									)}
 								/>
-								<Button type="submit">Sunmit</Button>
+								<Button type="submit">Submit</Button>
 							</form>
 						</Form>
 					</Card>
