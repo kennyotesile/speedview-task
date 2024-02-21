@@ -16,7 +16,7 @@ The project was set up and run locally with the following:
 1. Clone the repository to your local machine:
 
 ```bash
-git clone <repo-link>
+git clone https://github.com/kennyotesile/speedview-task
 ```
 
 2. Navigate to the project directory:
@@ -36,22 +36,28 @@ npm install
 The project follows a structured directory layout:
 
 ```bash
+├── prisma/ # Prisma ORM files
+│   ├── index.ts
+│   ├── schema.prisma
 ├── public/ # Publicly accessible static assets
 ├── src/ # Source code directory
 │   ├── app/ # App folder
+│   │   ├── api/ # API routes
+│   │   │   └── ...
+│   │   ├── dashboard # Dashboard page
+│   │   │   └── ...
+│   │   ├── sign-in # Sign in page
+│   │   │   └── ...
+│   │   ├── globals.css # Global CSS file
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
-│   │   ├── globals.css # Global CSS file
 │   │   └── ...
 │   ├── components/ # Reusable React components
-│   │   ├── pages/ # Page components
 │   │   ├── ui/ # UI components
-│   │   │   └── ... # Section components
+│   │   │   └── ... # Other components
 │   │   └── ...
 │   ├── lib/ # Modules and utility functions
-│   │   ├── constants.js # Constants
-│   │   ├── utils.ts # Utility functions
-│   │   └── ...
+│   │   └── utils.ts # Utility functions
 ├── ... # Configs, README, etc.
 ```
 
