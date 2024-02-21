@@ -117,8 +117,10 @@ export default function Home() {
 	};
 
 	useEffect(() => {
-		getPersonalInfo();
-	}, []);
+		if (session) {
+			getPersonalInfo();
+		}
+	}, [session]);
 
 	const { register, watch } = useForm();
 
