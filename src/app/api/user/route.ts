@@ -49,3 +49,28 @@ export async function POST(request: NextRequest) {
 		return new NextResponse(JSON.stringify(updatedUser));
 	}
 }
+
+export async function DELETE(request: NextRequest) {
+	const url = new URL(request.url);
+	const email = url.searchParams.get("email") as string;
+
+	const user = await prisma.user.findUnique({
+		where: {
+			email,
+		},
+	});
+
+	if (!user) {
+		return new NextResponse(JSON.stringify({ error: "User information not found" }), {
+			status: 404,
+		});
+	} else {
+		await prisma.user.delete({
+			where: {
+				email,
+			},
+		});
+
+		return new NextResponse(JSON.stringify({ message: "User information deleted successfully" }));
+	}
+}

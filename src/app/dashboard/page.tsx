@@ -46,6 +46,7 @@ export default function Home() {
 	const [personalInfo, setPersonalInfo] = useState(null);
 	const [submittingPersonalInfo, setSubmittingPersonalInfo] = useState(false);
 	const [gettingPersonalInfo, setGettingPersonalInfo] = useState(false);
+	const [deletingPersonalInfo, setDeletingPersonalInfo] = useState(false);
 
 	const personalInfoForm = useForm<z.infer<typeof personalInfoFormSchema>>({
 		resolver: zodResolver(personalInfoFormSchema),
@@ -62,58 +63,120 @@ export default function Home() {
 		setSubmittingPersonalInfo(true);
 		console.log("Submitting personal info...");
 
-		const response = await fetch("/api/user", {
-			method: "POST",
-			body: JSON.stringify({
-				email: session?.user?.email,
-				firstName: personalInfoForm.getValues().firstName,
-				lastName: personalInfoForm.getValues().lastName,
-				phone: personalInfoForm.getValues().phoneNumber,
-				address: personalInfoForm.getValues().address,
-			}),
-		});
+		try {
+			const response = await fetch("/api/user", {
+				method: "POST",
+				body: JSON.stringify({
+					email: session?.user?.email,
+					firstName: personalInfoForm.getValues().firstName,
+					lastName: personalInfoForm.getValues().lastName,
+					phone: personalInfoForm.getValues().phoneNumber,
+					address: personalInfoForm.getValues().address,
+				}),
+			});
 
-		if (response.ok) {
-			alert("Personal information submitted successfully!");
+			if (response.ok) {
+				const data = await response.json();
 
-			personalInfoForm.reset();
+				personalInfoForm.reset();
+				setSubmittingPersonalInfo(false);
 
-			const data = await response.json();
-			console.log(data);
-		} else {
-			alert("Unknown error occured.");
+				alert("Submitted personal info");
+				console.log("Submitted personal info");
+				console.log(data);
 
+				getPersonalInfo();
+
+				return;
+			} else {
+				setSubmittingPersonalInfo(false);
+				alert("Failed to submit personal info");
+				console.error("Failed to submit personal info");
+
+				return;
+			}
+		} catch (error) {
 			setSubmittingPersonalInfo(false);
-			console.error("Failed to submit personal info");
+
+			alert(`Failed to submit personal info. ${error}`);
+			console.error(`Failed to submit personal info. ${error}`);
 
 			return;
 		}
-
-		setSubmittingPersonalInfo(false);
-		console.log("Submitted personal info");
-
-		getPersonalInfo();
 	};
 
 	const getPersonalInfo = async () => {
 		setGettingPersonalInfo(true);
 		console.log("Retrieving personal info...");
 
-		const response = await fetch(`/api/user?email=${session?.user?.email}`);
+		try {
+			const response = await fetch(`/api/user?email=${session?.user?.email}`);
 
-		if (response.ok) {
-			const data = await response.json();
-			setPersonalInfo(data);
-			console.log(data);
-		} else {
+			if (response.ok) {
+				const data = await response.json();
+
+				setPersonalInfo(data);
+
+				setGettingPersonalInfo(false);
+
+				console.log("Retrieved personal info");
+				console.log(data);
+
+				return;
+			} else {
+				setGettingPersonalInfo(false);
+
+				alert("Failed to retrieve personal info");
+				console.error("Failed to retrieve personal info");
+
+				return;
+			}
+		} catch (error) {
 			setGettingPersonalInfo(false);
-			console.error("Failed to retrieve personal info");
+
+			alert(`Failed to retrieve personal info. ${error}`);
+			console.error(`Failed to retrieve personal info. ${error}`);
 
 			return;
 		}
+	};
 
-		setGettingPersonalInfo(false);
-		console.log("Retrieved personal info");
+	const deletePersonalInfo = async () => {
+		setDeletingPersonalInfo(true);
+		console.log("Attempting to delete personal info...");
+
+		try {
+			const response = await fetch(`/api/user?email=${session?.user?.email}`, {
+				method: "DELETE",
+			});
+
+			if (response.ok) {
+				setPersonalInfo(null);
+
+				setDeletingPersonalInfo(false);
+
+				alert("Deleted personal info!");
+				console.log("Deleted personal info!");
+
+				return;
+			} else {
+				const data = await response.json();
+
+				setDeletingPersonalInfo(false);
+
+				alert(`Failed to delete personal info. Error: ${data.error}`);
+				console.error(`Failed to delete personal info. Error: ${data.error}`);
+
+				return;
+			}
+		} catch (error) {
+			setDeletingPersonalInfo(false);
+
+			alert(`Failed to delete personal info. Error: ${error}`);
+			console.error(`Failed to delete personal info. Error: ${error}`);
+
+			return;
+		}
 	};
 
 	useEffect(() => {
@@ -167,9 +230,15 @@ export default function Home() {
 				</header>
 
 				<main className="container py-6 space-y-8">
-					<div className="flex flex-col space-y-2">
-						<h1 className="font-semibold text-3xl md:text-4xl">Dashboard</h1>
-						<p className="text-lg text-muted-foreground">Manage your dashboard</p>
+					<div className="flex flex-col md:flex-row space-y-2 md:space-x-2 justify-between">
+						<div className="flex flex-col space-y-2">
+							<h1 className="font-semibold text-3xl md:text-4xl">Dashboard</h1>
+							<p className="text-lg text-muted-foreground">Manage your dashboard</p>
+						</div>
+						<Button className="bg-destructive hover:bg-destructive/80 text-destructive-foreground space-x-2" onClick={deletePersonalInfo} disabled={deletingPersonalInfo}>
+							{deletingPersonalInfo && <Loader2 size={16} className="animate animate-spin" />}
+							<span>Delete Personal Info</span>
+						</Button>
 					</div>
 					<div className="flex flex-col space-y-2">
 						<p className="text-lg text-muted-foreground">Email address: {gettingPersonalInfo ? "Loading..." : session?.user?.email}</p>
